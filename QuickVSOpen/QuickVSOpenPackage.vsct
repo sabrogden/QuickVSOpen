@@ -1,0 +1,86 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <!--This is the file that defines the IDs for all the commands exposed by VisualStudio. -->
+  <Extern href="stdidcmd.h" />
+
+  <!--This header contains the command ids for the menus provided by the shell. -->
+  <Extern href="vsshlids.h" />
+
+  <!--The Commands section is where commands, menus, and menu groups are defined.
+      This section uses a Guid to identify the package that provides the command defined inside it. -->
+  <Commands package="guidQuickVSOpenPackage">
+
+    <Groups>
+      
+      <Group guid="guidQuickVSOpenPackageCmdSet" id="MyMenuGroup" priority="0x0600">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_TOOLS"/>
+      </Group>
+
+      <Group guid="guidQuickVSOpenPackageCmdSet" id="StandardToolbarGroup" priority="0xF000">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_TOOL_STANDARD"/>
+      </Group>
+    </Groups>
+
+    <Buttons>
+      
+      <Button guid="guidQuickVSOpenPackageCmdSet" id="OpenSolutionFileCommandId" priority="0x0100" type="Button">
+        <Parent guid="guidQuickVSOpenPackageCmdSet" id="MyMenuGroup" />
+        <Icon guid="guidOpenSolutionImages" id="openFile" />
+        <Strings>
+          <ButtonText>Open Solution File</ButtonText>
+        </Strings>
+      </Button>
+      
+      <Button guid="guidQuickVSOpenPackageCmdSet" id="cmdidGoToMethodCommand" priority="0x0100" type="Button">
+        <Parent guid="guidQuickVSOpenPackageCmdSet" id="MyMenuGroup" />
+        <Icon guid="guidGoToMethodImages" id="goToMethod" />
+        <Strings>
+          <ButtonText>Go To Method</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidQuickVSOpenPackageCmdSet" id="OpenSolutionFileCommandId" priority="0x0100" type="Button">
+        <Parent guid="guidQuickVSOpenPackageCmdSet" id="StandardToolbarGroup" />
+        <Icon guid="guidOpenSolutionImages" id="openFile" />
+        <Strings>
+          <ButtonText>Open Solution File</ButtonText>
+        </Strings>
+      </Button>
+      
+      <Button guid="guidQuickVSOpenPackageCmdSet" id="cmdidGoToMethodCommand" priority="0x0100" type="Button">
+        <Parent guid="guidQuickVSOpenPackageCmdSet" id="StandardToolbarGroup" />
+        <Icon guid="guidGoToMethodImages" id="goToMethod" />
+        <Strings>
+          <ButtonText>Go To Method</ButtonText>
+        </Strings>
+      </Button>
+      
+    </Buttons>
+
+    <Bitmaps>
+      <Bitmap guid="guidOpenSolutionImages" href="Resources\OpenSolutionFileCommand.png" usedList="openFile" />
+      <Bitmap guid="guidGoToMethodImages" href="Resources\GoToMethodCommand.png" usedList="goToMethod" />
+    </Bitmaps>
+  </Commands>
+
+  <Symbols>
+    <!-- This is the package guid. -->
+    <GuidSymbol name="guidQuickVSOpenPackage" value="{d58f2436-2eb4-4dbe-bc5c-29aa00be1bc2}" />
+    
+    <GuidSymbol name="guidQuickVSOpenPackageCmdSet" value="{24d9b5e5-75fc-4173-9201-8681d1738223}">
+      <IDSymbol name="MyMenuGroup" value="0x1020" />
+      <IDSymbol name="OpenSolutionFileCommandId" value="0x0100" />
+      <IDSymbol name="cmdidGoToMethodCommand" value="4129" />
+      <IDSymbol name="StandardToolbarGroup" value="0x0190"/>
+    </GuidSymbol>
+
+    <GuidSymbol name="guidOpenSolutionImages" value="{bd7e0986-668f-4fef-a145-d0812e6b4fea}">
+      <IDSymbol name="openFile" value="1" />
+    </GuidSymbol>
+  
+    <GuidSymbol name="guidGoToMethodImages" value="{b6449124-d4ee-490c-adcd-671c808bff6d}">
+      <IDSymbol name="goToMethod" value="1" />
+    </GuidSymbol>
+  </Symbols>
+</CommandTable>
