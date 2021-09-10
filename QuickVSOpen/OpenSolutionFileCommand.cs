@@ -18,6 +18,8 @@ namespace QuickVSOpen
         private SolutionFiles m_files = null;
         QuickVSOpenDialog m_dialog = null;
         DTE2 m_dt;
+        DateTime m_lastSolutionWriteTime;
+        string m_lastSolutionFileName;
 
         /// <summary>
         /// Command ID.
@@ -96,6 +98,13 @@ namespace QuickVSOpen
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            if(m_dt == null ||
+                m_dt.Solution == null ||
+                string.IsNullOrWhiteSpace(m_dt.Solution.FileName))
+            {
+                return;
+            }
+
             if (null == m_files)
             {
                 try
@@ -108,6 +117,22 @@ namespace QuickVSOpen
                 finally
                 {
                     System.Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.Default;
+                }
+            }
+            else
+            {
+                DateTime lastWrite = System.IO.File.GetLastWriteTimeUtc(m_dt.Solution.FileName);
+                if (m_lastSolutionWriteTime != lastWrite ||
+                    m_lastSolutionFileName != m_dt.Solution.FileName)
+                {
+                    if (m_files != null)
+                    {
+                        m_files.Refresh();
+                        if (m_dialog != null)
+                        {
+                            m_dialog.RefreshFilter("");
+                        }
+                    }
                 }
             }
 
@@ -125,6 +150,9 @@ namespace QuickVSOpen
                         m_dt.ExecuteCommand("File.OpenFile", string.Format("\"{0}\"", name));
                 }
             }
+
+            m_lastSolutionWriteTime = System.IO.File.GetLastWriteTimeUtc(m_dt.Solution.FileName);
+            m_lastSolutionFileName = m_dt.Solution.FileName;
         }
     }
 }

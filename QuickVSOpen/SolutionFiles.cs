@@ -12,9 +12,9 @@ namespace QuickVSOpen
 	public class SolutionFiles : ISearchable
 	{
 		//private Plugin mPlugin;
-		private DTE2 m_application = null;
+		private DTE2 m_dt = null;
 		private List<SearchEntry> m_solutionFiles = new List<SearchEntry>();
-		private List<SearchEntry> mHits = new List<SearchEntry>();
+		private List<SearchEntry> m_hits = new List<SearchEntry>();
 		string m_excludeFilePath;
 		bool m_equalSearch = false;
 		bool m_keyIsFileName = false;
@@ -30,7 +30,7 @@ namespace QuickVSOpen
 
 		public SolutionFiles(DTE2 dt)
 		{
-			m_application = dt;
+			m_dt = dt;
 		}
 
 		public void Refresh()
@@ -39,16 +39,16 @@ namespace QuickVSOpen
 
 			Stopwatch w = Stopwatch.StartNew();
 			m_solutionFiles.Clear();
-			mHits.Clear();
+			m_hits.Clear();
 
-			foreach (Project project in m_application.Solution.Projects)
+			foreach (Project project in m_dt.Solution.Projects)
 			{
 				Log.Info("\tScanning project {0}", project.Name);
 				AddProjectItems(project.ProjectItems);
 			}
-			Log.Info("Scanning done ({0} files in {1} projects)", Count, m_application.Solution.Projects.Count);
+			Log.Info("Scanning done ({0} files in {1} projects)", Count, m_dt.Solution.Projects.Count);
 
-			mHits.AddRange(m_solutionFiles);
+			m_hits.AddRange(m_solutionFiles);
 
 			LastRefresh = DateTime.Now;
 			LastRefreshDurationMS = (int)w.ElapsedMilliseconds;
@@ -133,7 +133,7 @@ namespace QuickVSOpen
 
 		public int CandidateCount
 		{
-			get { return mHits.Count; }
+			get { return m_hits.Count; }
 		}
 
 		public string ExcludeFilePath
@@ -177,22 +177,22 @@ namespace QuickVSOpen
 
 		public SearchEntry Candidate(int i)
 		{
-			return mHits[i];
+			return m_hits[i];
 		}
 
 		public void UpdateSearchQuery(string query, bool incremental)
 		{
 			if (!incremental)
 			{
-				mHits = Filter(m_solutionFiles, query);
+				m_hits = Filter(m_solutionFiles, query);
 			}
 			else
 			{
-				mHits = Filter(mHits, query);
+				m_hits = Filter(m_hits, query);
 			}
 
 			// TODO: Sort the files based on relevance.
-			mHits.Sort(new SearchEntry.CompareOnRelevance(query));
+			m_hits.Sort(new SearchEntry.CompareOnRelevance(query));
 		}
 
 		private List<SearchEntry> Filter(List<SearchEntry> candidates, string query)

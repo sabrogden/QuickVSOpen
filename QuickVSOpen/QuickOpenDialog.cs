@@ -100,7 +100,7 @@ namespace QuickVSOpen
             RefreshFilter(mInputText.Text);
         }
 
-        void RefreshFilter(string filter)
+        public void RefreshFilter(string filter)
         {
             mFiles.UpdateSearchQuery(filter, false);
             mStatusLabel.Text = string.Format("{0} hits", mFiles.CandidateCount);
@@ -118,7 +118,10 @@ namespace QuickVSOpen
                     listView1.Items[item].Selected = false;
                 }
 
-                listView1.Items[0].Selected = true;
+                if (listView1.Items.Count > 0)
+                {
+                    listView1.Items[0].Selected = true;
+                }
             }
         }
 
