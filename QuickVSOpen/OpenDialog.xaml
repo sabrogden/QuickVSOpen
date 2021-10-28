@@ -1,0 +1,51 @@
+﻿<Window x:Class="QuickVSOpen.OpenDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:QuickVSOpen"
+        mc:Ignorable="d"
+        Title="Open" Height="510.741" Width="466.35"
+        PreviewKeyDown="Window_KeyDown"
+        WindowStartupLocation="CenterOwner" FontFamily="Consolas" Closing="Window_Closing">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="25"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="20"/>
+        </Grid.RowDefinitions>
+        <TextBox Grid.Row="0" x:Name="m_searchTextBox" TextChanged="m_searchTextBox_TextChanged" PreviewKeyDown="m_searchTextBox_KeyDown" VerticalContentAlignment="Center"/>
+        <ListView Grid.Row="1" x:Name="m_resultsListView" MouseDoubleClick="m_resultsListView_MouseDoubleClick" KeyDown="m_resultsListView_KeyDown" BorderThickness="0">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="{x:Type ListViewItem}">
+                    <Setter Property="ToolTip">
+                        <Setter.Value>
+                            <UniformGrid Columns="1">
+                                <TextBlock Text="{Binding FullPath}"/>
+                            </UniformGrid>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.Resources>
+                <Style TargetType="GridViewColumnHeader">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </Style>
+            </ListView.Resources>
+            <ListView.View>
+                <GridView >
+                    <GridViewColumn Width="100" DisplayMemberBinding="{Binding Path=FileName}" Header="Name" />
+                    <GridViewColumn Width="100" DisplayMemberBinding="{Binding Path=MethodType}" Header="Name" />
+
+                </GridView>
+            </ListView.View>
+        </ListView>
+
+        <Grid Grid.Row="2">
+            <TextBlock x:Name="m_statusTextBlock" VerticalAlignment="Center"/>
+        </Grid>
+        
+
+    </Grid>
+</Window>

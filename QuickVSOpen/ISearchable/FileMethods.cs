@@ -26,6 +26,8 @@ namespace QuickVSOpen
 
         public DateTime LastRefresh { get; set; }
 
+        public string LastSearch { get; set; } = "";
+
         public int LastRefreshDurationMS { get; set; }
 
         public string FileName
@@ -93,11 +95,11 @@ namespace QuickVSOpen
                                     {
                                         SearchEntry entry = new SearchEntry()
                                         {
-                                            methodType = methodType,
-                                            filename = ce.Name,
+                                            MethodType = methodType,
+                                            FileName = ce.Name,
                                             lineNumber = ce.StartPoint.Line,
                                             key = ce.Name.ToLower(),
-                                            fullPath = ce.Name
+                                            FullPath = ce.Name
                                         };
 
                                         m_methods.Add(entry);
@@ -154,17 +156,17 @@ namespace QuickVSOpen
                 if (columns.Count() >= 4)
                 {
                     SearchEntry entry = new SearchEntry();
-                    entry.filename = columns[0];
+                    entry.FileName = columns[0];
                     string lineNumber = columns[2].TrimEnd('\"').TrimEnd(';');
                     int outLineNumber;
                     if (int.TryParse(lineNumber, out outLineNumber))
                     {
                         entry.lineNumber = outLineNumber;
-                        entry.methodType = GetMethodType(columns[3]);
-                        if (entry.methodType != "")
+                        entry.MethodType = GetMethodType(columns[3]);
+                        if (entry.MethodType != "")
                         {
-                            entry.key = entry.filename.ToLower();
-                            entry.fullPath = entry.filename;
+                            entry.key = entry.FileName.ToLower();
+                            entry.FullPath = entry.FileName;
                             m_methods.Add(entry);
                             mHits.Add(entry);
                         }
@@ -214,6 +216,13 @@ namespace QuickVSOpen
             return mHits[i];
         }
 
+        public IEnumerable<SearchEntry> Hits
+        {
+            get
+            {
+                return mHits;
+            }
+        }
         public void UpdateSearchQuery(string query, bool incremental)
         {
             if (!incremental)

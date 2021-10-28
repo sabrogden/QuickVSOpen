@@ -2,9 +2,9 @@
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
@@ -15,16 +15,18 @@ namespace QuickVSOpen
     /// <summary>
     /// Command handler
     /// </summary>
-    internal sealed class GoToMethodCommand
+    internal sealed class OpenSolutionFileCommand
     {
-        List<FileMethods> m_methods = new List<FileMethods>();
-        QuickVSOpenDialog m_dialog = null;
+        private SolutionFiles m_files = null;
+        OpenDialog m_openDialog = null;
         DTE2 m_dt;
+        DateTime m_lastSolutionWriteTime;
+        string m_lastSolutionFileName;
 
         /// <summary>
         /// Command ID.
         /// </summary>
-        public const int CommandId = 4129;
+        public const int CommandId = 0x0100;
 
         /// <summary>
         /// Command menu group (command set GUID).
@@ -37,15 +39,14 @@ namespace QuickVSOpen
         private readonly AsyncPackage package;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GoToMethodCommand"/> class.
+        /// Initializes a new instance of the <see cref="OpenSolutionFileCommand"/> class.
         /// Adds our command handlers for menu (commands must exist in the command table file)
         /// </summary>
         /// <param name="package">Owner package, not null.</param>
         /// <param name="commandService">Command service to add command to, not null.</param>
-        private GoToMethodCommand(AsyncPackage package, OleMenuCommandService commandService, DTE2 dt)
+        private OpenSolutionFileCommand(AsyncPackage package, OleMenuCommandService commandService, DTE2 dt)
         {
             m_dt = dt;
-
             this.package = package ?? throw new ArgumentNullException(nameof(package));
             commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
 
@@ -57,7 +58,7 @@ namespace QuickVSOpen
         /// <summary>
         /// Gets the instance of the command.
         /// </summary>
-        public static GoToMethodCommand Instance
+        public static OpenSolutionFileCommand Instance
         {
             get;
             private set;
@@ -80,13 +81,16 @@ namespace QuickVSOpen
         /// <param name="package">Owner package, not null.</param>
         public static async Task InitializeAsync(AsyncPackage package, DTE2 dt)
         {
-            // Switch to the main thread - the call to AddCommand in GoToMethodCommand's constructor requires
+            // Switch to the main thread - the call to AddCommand in OpenSolutionFileCommand's constructor requires
             // the UI thread.
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(package.DisposalToken);
 
             OleMenuCommandService commandService = await package.GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
-            Instance = new GoToMethodCommand(package, commandService, dt);
+            Instance = new OpenSolutionFileCommand(package, commandService, dt);
         }
+
+        
+
 
         /// <summary>
         /// This function is the callback used to execute the command when the menu item is clicked.
@@ -99,81 +103,66 @@ namespace QuickVSOpen
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (null == m_dt.ActiveDocument)
+            if(m_dt == null ||
+                m_dt.Solution == null ||
+                string.IsNullOrWhiteSpace(m_dt.Solution.FileName))
+            {
                 return;
+            }
 
-            FileMethods found = null;
-            try
+            if (null == m_files)
             {
-                System.Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.WaitCursor;
-                string fullPath = m_dt.ActiveDocument.FullName;
-
-                found = m_methods.FirstOrDefault(item => item.FileName == fullPath);
-                if (null == found)
+                try
                 {
-                    found = new FileMethods(m_dt);
-                    found.FileName = fullPath;
-                    found.Refresh();
-
-                    //Options options = ((Options)Plugin.Options);
-                    //if (options.UseVisualStudioForFileMethods == false)
-                    //{
-                    //    Log.Info("adding method file to cache, file: " + fullPath);
-                    //    m_methods.Insert(0, found);
-                    //}
+                    System.Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.WaitCursor;
+                    Log.Info("First time fast open is run, scanning solution for files");
+                    m_files = new SolutionFiles(m_dt);
+                    m_files.Refresh();
                 }
-                else
+                finally
                 {
-                    //move the start of list, so it doesn't get removed
-                    m_methods.Remove(found);
-                    m_methods.Insert(0, found);
-
-                    DateTime lastWrite = System.IO.File.GetLastWriteTimeUtc(fullPath);
-                    if (found.LastWrite != lastWrite)
+                    System.Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.Default;
+                }
+            }
+            else
+            {
+                DateTime lastWrite = System.IO.File.GetLastWriteTimeUtc(m_dt.Solution.FileName);
+                if (m_lastSolutionWriteTime != lastWrite ||
+                    m_lastSolutionFileName != m_dt.Solution.FileName)
+                {
+                    if (m_files != null)
                     {
-                        Log.Info("last write time changes for file: " + fullPath + " refreshing methods");
-                        found.Refresh();
-
-                        found.LastWrite = lastWrite;
+                        m_files.Refresh();
+                        if (m_openDialog != null)
+                        {
+                            m_openDialog.RefreshFilter("");
+                        }
                     }
                 }
             }
-            finally
+
+            if (m_openDialog == null)
             {
-                System.Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.Default;
+                m_openDialog = new OpenDialog(m_files, true, false, true);
+                m_openDialog.Owner = System.Windows.Application.Current.MainWindow;
+                m_openDialog.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterScreen;
+            }            
+
+            m_openDialog.Init();
+            m_openDialog.ShowDialog();
+
+            if (m_openDialog.Result == true)
+            {
+                foreach (var file in m_openDialog.AllSelected)
+                {
+                    string name = file.FullPath;
+                    if (name.Length > 0)
+                        m_dt.ExecuteCommand("File.OpenFile", string.Format("\"{0}\"", name));
+                }
             }
 
-            // FileMethods found = new FileMethods(Plugin);
-            //found.FileName = fullPath;
-            //found.Refresh();
-
-            if (found != null)
-            {
-                if (null == m_dialog)
-                {
-                    m_dialog = new QuickVSOpenDialog(found, false, true, false);
-                }
-                else
-                {
-                    m_dialog.Files = found;
-                }
-
-                if (m_dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                {
-                    var selectedEntry = m_dialog.SelectedEntry;
-                    if (selectedEntry != null &&
-                        selectedEntry.lineNumber.HasValue)
-                    {
-                        m_dt.ExecuteCommand("Edit.GoTo", string.Format("{0}", selectedEntry.lineNumber.Value));
-                    }
-                }
-
-                if (m_methods.Count > 30)
-                {
-                    Log.Info("removing method file to cache, file: " + m_methods[m_methods.Count - 1].FileName);
-                    m_methods.RemoveAt(m_methods.Count - 1);
-                }
-            }
+            m_lastSolutionWriteTime = System.IO.File.GetLastWriteTimeUtc(m_dt.Solution.FileName);
+            m_lastSolutionFileName = m_dt.Solution.FileName;
         }
     }
 }
