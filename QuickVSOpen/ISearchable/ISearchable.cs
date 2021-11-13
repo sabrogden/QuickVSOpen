@@ -18,5 +18,7 @@ namespace QuickVSOpen
         DateTime LastRefresh { get; }
 
         int LastRefreshDurationMS { get; }
+
+        IEnumerable<SearchEntry> Hits { get; }
     }
 }

@@ -61,12 +61,12 @@ namespace QuickVSOpen
 			foreach (string file in Directory.GetFiles(dirname))
 			{
 				SearchEntry entry = new SearchEntry();
-				entry.fullPath = file;
-				entry.filename = Path.GetFileName(file);
-				entry.key = entry.filename.ToLower();
+				entry.FullPath = file;
+				entry.FileName = Path.GetFileName(file);
+				entry.key = entry.FileName.ToLower();
 				if (m_keyIsFileName)
 				{
-					entry.key = entry.filename.ToLower();
+					entry.key = entry.FileName.ToLower();
 				}
 
 				if (file != m_excludeFilePath)
@@ -107,12 +107,12 @@ namespace QuickVSOpen
 						string name = item.get_FileNames((short)i);
 
 						SearchEntry entry = new SearchEntry();
-						entry.fullPath = name;
-						entry.filename = Path.GetFileName(name);
-						entry.key = entry.filename.ToLower();
+						entry.FullPath = name;
+						entry.FileName = Path.GetFileName(name);
+						entry.key = entry.FileName.ToLower();
 						if (m_keyIsFileName)
 						{
-							entry.key = entry.filename.ToLower();
+							entry.key = entry.FileName.ToLower();
 						}
 						if (name != m_excludeFilePath)
 						{
@@ -178,6 +178,14 @@ namespace QuickVSOpen
 		public SearchEntry Candidate(int i)
 		{
 			return m_hits[i];
+		}
+
+		public IEnumerable<SearchEntry> Hits 
+		{ 
+			get
+            {
+				return m_hits;
+            }
 		}
 
 		public void UpdateSearchQuery(string query, bool incremental)

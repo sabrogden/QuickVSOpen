@@ -45,19 +45,16 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="FileMethods.cs" />
-    <Compile Include="GoToMethodCommand.cs" />
-    <Compile Include="ISearchable.cs" />
+    <Compile Include="ISearchable\FileMethods.cs" />
+    <Compile Include="Commands\GoToMethodCommand.cs" />
+    <Compile Include="ISearchable\ISearchable.cs" />
     <Compile Include="Log.cs" />
-    <Compile Include="OpenSolutionFileCommand.cs" />
+    <Compile Include="OpenDialog.xaml.cs" />
+    <Compile Include="Commands\OpenSolutionFileCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="QuickOpenDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="QuickOpenDialog.Designer.cs" />
     <Compile Include="QuickOpenPackage.cs" />
-    <Compile Include="SearchEntry.cs" />
-    <Compile Include="SolutionFiles.cs" />
+    <Compile Include="ISearchable\SearchEntry.cs" />
+    <Compile Include="ISearchable\SolutionFiles.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="source.extension.vsixmanifest">
@@ -66,16 +63,25 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Design" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.0.0-previews-1-31410-273" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="17.0.3177-preview3" />
+    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.0.31902.203" ExcludeAssets="runtime">
+      <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="17.0.5232">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <VSCTCompile Include="QuickVSOpenPackage.vsct">
@@ -90,7 +96,10 @@
     <Content Include="Resources\OpenSolutionFileCommand.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="QuickOpenDialog.resx" />
+    <Page Include="OpenDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />

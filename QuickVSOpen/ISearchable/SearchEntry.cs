@@ -7,13 +7,13 @@ namespace QuickVSOpen
 {
 	public class SearchEntry
 	{
-		public string fullPath = "";
+		public string FullPath { get; set; } = "";
 		public string project = "";
 		public string description = "";
 		public string key = "";
-		public string filename = "";
+		public string FileName { get; set; } = "";
 		public int? lineNumber = null;
-		public string methodType = "";
+		public string MethodType { get; set; } = "";
 		public long? lastUsed = null;
 
 		public SearchEntry()
