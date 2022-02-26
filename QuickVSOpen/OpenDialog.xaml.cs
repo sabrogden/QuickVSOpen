@@ -30,6 +30,9 @@ namespace QuickVSOpen
         public string SelectedSearchString { get; set; }
         bool m_handleTextChanged = true;
 
+        public double ClosedDpi { get; set; }
+        public bool AllowCloseClose { get; set; } = false;
+
         public OpenDialog(ISearchable files, bool multiSelect, bool showSecondColumn, bool showFileTooltip)
         {
             InitializeComponent();
@@ -163,32 +166,23 @@ namespace QuickVSOpen
                 m_resultsListView.SelectedIndex = 0;
              }));
 
-
             Result = false;
 
+            var source = PresentationSource.FromVisual(this.Owner);
+            var dpi = source?.CompositionTarget?.TransformFromDevice.M11 ?? 1.0;
+
+            var p = this.Owner.PointToScreen(new Point(this.Owner.Width / 2, this.Owner.Height / 2));
+
+            POINT lpPoint;
+            lpPoint.X = (int)p.X;
+            lpPoint.Y = (int)p.Y;
+
+            var screen = ScreenFromPoint1(lpPoint);
+
+            this.Left = screen.Bounds.Left + ((screen.Bounds.Width * dpi) / 2) - (this.Width / 2);
+            this.Top = screen.Bounds.Top + ((screen.Bounds.Height * dpi) / 2) - (this.Height / 2);
+
             this.ShowInTaskbar = false;
-
-            if (System.Windows.Application.Current.MainWindow.WindowState == System.Windows.WindowState.Maximized)
-            {
-                POINT lpPoint;
-                GetCursorPos(out lpPoint);
-
-                var screen = ScreenFromPoint1(lpPoint);
-
-                var left = screen.Bounds.Left + (screen.Bounds.Width / 2) - (this.Width / 2);
-                this.Left = left;
-
-                var top = screen.Bounds.Top + (screen.Bounds.Height / 2) - (this.Height / 2);
-                this.Top = top;
-            }
-            else
-            {
-                var left = (System.Windows.Application.Current.MainWindow.Left + (System.Windows.Application.Current.MainWindow.ActualWidth / 2)) - (this.Width / 2);
-                this.Left = left;
-
-                var top = (System.Windows.Application.Current.MainWindow.Top + (System.Windows.Application.Current.MainWindow.ActualHeight / 2)) - (this.Height / 2);
-                this.Top = top;
-            }
         }
 
         private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
@@ -316,15 +310,22 @@ namespace QuickVSOpen
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             SelectedSearchString = m_searchTextBox.Text;
-            e.Cancel = true;
-            
-            Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (DispatcherOperationCallback)(arg =>
+
+            if (this.AllowCloseClose == false)
             {
-                this.Left = -1000;
-                this.Hide();
-                
-                return null;
-            }), null);
+                e.Cancel = true;
+
+                //keep track of this, not sure why but i was having problems (window would disapear) with closing the window and opening on a different dpi screen
+                //this lets us close the window on open if they are on different dpi and that works then
+                var s = PresentationSource.FromVisual(this);
+                this.ClosedDpi = s?.CompositionTarget?.TransformFromDevice.M11 ?? 1.0;
+
+                Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (DispatcherOperationCallback)(arg =>
+                {
+                    this.Hide();
+                    return null;
+                }), null);
+            }
         }
     }
 }

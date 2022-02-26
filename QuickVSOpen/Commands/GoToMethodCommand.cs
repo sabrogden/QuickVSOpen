@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
 using Task = System.Threading.Tasks.Task;
+using System.Windows;
 
 namespace QuickVSOpen
 {
@@ -147,6 +148,18 @@ namespace QuickVSOpen
 
             if (found != null)
             {
+                if(m_openDialog != null)
+                {
+                    var source = PresentationSource.FromVisual(m_openDialog.Owner);
+                    var dpi = source?.CompositionTarget?.TransformFromDevice.M11 ?? 1.0;
+                    if(dpi != m_openDialog.ClosedDpi)
+                    {
+                        m_openDialog.AllowCloseClose = true;
+                        m_openDialog.Close();
+                        m_openDialog = null;
+                    }
+                }
+
                 if (m_openDialog == null)
                 {
                     m_openDialog = new OpenDialog(found, true, true, true);
